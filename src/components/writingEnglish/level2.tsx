@@ -1,39 +1,84 @@
 import React, { useRef, useState, useEffect } from "react";
-import Header from "@/components/Header";
 
 const WritingLevel2 = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
+  const [lastPoint, setLastPoint] = useState(null);
   const [currentLetter, setCurrentLetter] = useState("A");
 
-  const startDrawing = (e: any) => {
+  // Handle canvas resize on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      // Get container width for responsive sizing
+      const container = containerRef.current;
+      const containerWidth = container ? container.clientWidth : window.innerWidth;
+      
+      // Set canvas size (max 400px or 90% of container width)
+      const size = Math.min(containerWidth * 0.9, 400);
+      canvas.width = size;
+      canvas.height = size;
+      
+      // Redraw letter guide if needed
+      const ctx = canvas.getContext("2d");
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "black";
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const getEventPoint = (e) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
+    
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-    setIsDrawing(true);
-    setLastPoint({ x, y });
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+    
+    if (clientX === null || clientY === null) return null;
+    
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
   };
 
-  const draw = (e: any) => {
+  const startDrawing = (e) => {
+    // Prevent scrolling when touching the canvas
+    e.preventDefault();
+    
+    const point = getEventPoint(e);
+    if (!point) return;
+    
+    setIsDrawing(true);
+    setLastPoint(point);
+  };
+
+  const draw = (e) => {
+    // Prevent scrolling when touching the canvas
+    e.preventDefault();
+    
     if (!isDrawing || !lastPoint || !canvasRef.current) return;
+    
+    const point = getEventPoint(e);
+    if (!point) return;
+    
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
 
-    ctx!.beginPath();
-    ctx!.moveTo(lastPoint.x, lastPoint.y);
-    ctx!.lineTo(x, y);
-    ctx!.strokeStyle = "black";
-    ctx!.lineWidth = 4;
-    ctx!.lineCap = "round";
-    ctx!.stroke();
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
 
-    setLastPoint({ x, y });
+    setLastPoint(point);
   };
 
   const stopDrawing = () => {
@@ -45,29 +90,28 @@ const WritingLevel2 = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
-
-  // Responsive canvas size
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const size = Math.min(window.innerWidth * 0.9, 400);
-      canvas.width = size;
-      canvas.height = size;
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <Header />
-      <div className="p-4 flex-grow flex flex-col items-center">
+      <div className="bg-white dark:bg-gray-800 shadow-md p-4">
+        <h1 className="text-xl font-bold text-center text-purple-600">Writing Practice</h1>
+      </div>
+      
+      <div ref={containerRef} className="p-4 flex-grow flex flex-col items-center max-w-lg mx-auto">
         <h2 className="text-xl sm:text-2xl font-bold text-purple-600 mb-2 text-center">
           Level 2: Write Letters Freely
         </h2>
         <p className="text-gray-700 dark:text-gray-300 mb-4 text-center">
           Write the selected letter — without a guide.
         </p>
+
+        <div className="letter-display mb-4 flex items-center justify-center">
+          <div className="text-6xl font-bold text-purple-400 opacity-30">
+            {currentLetter}
+          </div>
+        </div>
 
         <div className="mb-4 flex flex-wrap gap-2 justify-center">
           {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => (
@@ -88,24 +132,29 @@ const WritingLevel2 = () => {
           ))}
         </div>
 
-        <canvas
-          ref={canvasRef}
-          className="border-2 border-dashed border-purple-400 bg-white dark:bg-gray-800 rounded-xl"
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        />
+        <div className="canvas-container w-full flex justify-center touch-none">
+          <canvas
+            ref={canvasRef}
+            className="border-2 border-dashed border-purple-400 bg-white dark:bg-gray-800 rounded-xl touch-none"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+            onTouchCancel={stopDrawing}
+          />
+        </div>
 
-        <button
-          onClick={clearCanvas}
-          className="mt-4 px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Clear Canvas
-        </button>
+        <div className="mt-4 flex space-x-2">
+          <button
+            onClick={clearCanvas}
+            className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Clear Canvas
+          </button>
+        </div>
       </div>
     </div>
   );
