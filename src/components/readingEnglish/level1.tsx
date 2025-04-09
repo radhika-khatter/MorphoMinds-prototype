@@ -10,8 +10,7 @@ const ReadingLevel1 = () => {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const recognitionRef = useRef<any>(null);
-  const hasResult = useRef(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -31,11 +30,9 @@ const ReadingLevel1 = () => {
     recognition.onstart = () => {
       setIsListening(true);
       setIsProcessing(false);
-      hasResult.current = false;
     };
 
-    recognition.onresult = (event: any) => {
-      hasResult.current = true;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript.trim().toUpperCase();
       setRecognizedLetter(transcript);
       setIsListening(false);
@@ -44,24 +41,24 @@ const ReadingLevel1 = () => {
       if (transcript === selectedLetter) {
         setFeedback("✅ Correct!");
       } else {
-        setFeedback(`❌ You said "${transcript}", try again.`);
+        setFeedback(`❌ You said "${transcript}". Try again.`);
       }
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
 
-    recognition.onerror = (e: any) => {
+    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
       setIsListening(false);
       setIsProcessing(false);
-      setFeedback("⚠️ Error: " + e.error);
+      setFeedback(`⚠️ Error: ${e.error}`);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
 
     recognition.onend = () => {
-      if (!hasResult.current) {
-        setIsListening(false);
-        setIsProcessing(false);
-        setFeedback("⚠️ No response detected. Try again.");
+      setIsListening(false);
+      setIsProcessing(false);
+      if (!recognizedLetter) {
+        setFeedback("⚠️ No speech detected. Please try again.");
       }
     };
 
@@ -70,22 +67,20 @@ const ReadingLevel1 = () => {
 
   const startListening = () => {
     if (!recognitionRef.current) return;
+
     setFeedback(null);
     setRecognizedLetter(null);
     setIsListening(true);
     setIsProcessing(false);
-    hasResult.current = false;
 
     recognitionRef.current.start();
 
-    // Fallback timeout
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      if (!hasResult.current) {
-        recognitionRef.current.stop(); // force stop
+      if (isListening) {
+        recognitionRef.current?.stop();
         setIsListening(false);
         setIsProcessing(false);
-        setFeedback("⚠️ Took too long. Try again.");
+        setFeedback("⚠️ Took too long. Please try again.");
       }
     }, 6000);
   };
@@ -96,7 +91,7 @@ const ReadingLevel1 = () => {
     setFeedback(null);
     setIsListening(false);
     setIsProcessing(false);
-    if (recognitionRef.current) recognitionRef.current.abort();
+    recognitionRef.current?.abort();
   };
 
   return (
