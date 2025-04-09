@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 
+// ✅ Extend global types (put this in a `types.d.ts` if needed)
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const ReadingLevel1 = () => {
@@ -10,12 +18,12 @@ const ReadingLevel1 = () => {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
@@ -32,13 +40,17 @@ const ReadingLevel1 = () => {
       setIsProcessing(false);
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript.trim().toUpperCase();
-      setRecognizedLetter(transcript);
+    recognition.onresult = (event: any) => {
+      let transcript = event.results[0][0].transcript.trim().toUpperCase();
+
+      // ✅ Only keep the first character (some engines return full words)
+      const firstChar = transcript.charAt(0);
+
+      setRecognizedLetter(firstChar);
       setIsListening(false);
       setIsProcessing(false);
 
-      if (transcript === selectedLetter) {
+      if (firstChar === selectedLetter) {
         setFeedback("✅ Correct!");
       } else {
         setFeedback(`❌ You said "${transcript}". Try again.`);
@@ -47,7 +59,7 @@ const ReadingLevel1 = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
 
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (e: any) => {
       setIsListening(false);
       setIsProcessing(false);
       setFeedback(`⚠️ Error: ${e.error}`);
