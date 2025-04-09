@@ -6,22 +6,23 @@ const TracingCanvas = () => {
   const [selectedLetter, setSelectedLetter] = useState("A");
   const canvasRef = useRef(null);
   const pathCanvasRef = useRef(null); // Hidden canvas for path detection
+  const containerRef = useRef(null); // Reference to the container div
   const isDrawing = useRef(false);
   const lastPoint = useRef(null);
 
   // Draw the letter outlines manually (1D)
   const drawLetterOutlines = (ctx, letter, x, y, size, isDotted = false) => {
     if (isDotted) {
-      ctx.setLineDash([3, 3]);
+      ctx.setLineDash([13,20]);
     } else {
       ctx.setLineDash([]);
     }
     
-    const lineWidth = isDotted ? 1 : 2;
+    const lineWidth = isDotted ? 14 : 1;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = isDotted ? "gray" : "black";
+    ctx.strokeStyle = isDotted ? "rgba(128, 128, 128, 0.4)" : "black";
     
     // Helper constants for sizing
     const width = size * 0.3;          // Standard letter width
@@ -47,8 +48,8 @@ const TracingCanvas = () => {
         
         // Crossbar
         ctx.beginPath();
-        ctx.moveTo(x - width * 0.6, y);
-        ctx.lineTo(x + width * 0.6, y);
+        ctx.moveTo(x - width * 0.5, y);
+        ctx.lineTo(x + width * 0.5, y);
         ctx.stroke();
         break;
         
@@ -76,12 +77,12 @@ const TracingCanvas = () => {
         ctx.stroke();
         break;
         
-        case "C":
-    ctx.beginPath();
-    // Increased radius by using width*0.6 instead of width/2
-    ctx.arc(x, y, width*0.6, Math.PI * 0.25, Math.PI * 1.75, false);
-    ctx.stroke();
-    break;
+      case "C":
+        ctx.beginPath();
+        // Increased radius by using width*0.6 instead of width/2
+        ctx.arc(x, y, width*0.6, Math.PI * 0.25, Math.PI * 1.75, false);
+        ctx.stroke();
+        break;
         
       case "D":
         // Vertical stem
@@ -543,9 +544,13 @@ const TracingCanvas = () => {
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
     const pathCanvas = pathCanvasRef.current;
-    if (!canvas || !pathCanvas) return;
+    const container = containerRef.current;
+    if (!canvas || !pathCanvas || !container) return;
     
-    const width = Math.min(window.innerWidth * 0.9, 600);
+    // Get the container width and set a max width
+    const containerWidth = container.clientWidth;
+    const width = Math.min(containerWidth, 600);
+    
     canvas.width = width;
     canvas.height = width * 0.66;
     
@@ -566,30 +571,75 @@ const TracingCanvas = () => {
     drawDottedLetter();
   }, [selectedLetter]);
 
+  // Prevent default touch behavior to stop scrolling during drawing
+  useEffect(() => {
+    const preventTouchMove = (e) => {
+      if (isDrawing.current) {
+        e.preventDefault();
+      }
+    };
+
+    // Add passive: false to override default browser behavior
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    
+    return () => {
+      document.removeEventListener('touchmove', preventTouchMove);
+    };
+  }, []);
+
+  const getTouchPosition = (e, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0] || e.changedTouches[0];
+    return {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    };
+  };
+
   const startDrawing = (e) => {
+    e.preventDefault(); // Prevent default behavior
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+    
+    let position;
+    if (e.type.includes('mouse')) {
+      const rect = canvas.getBoundingClientRect();
+      position = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    } else {
+      position = getTouchPosition(e, canvas);
+    }
+    
     isDrawing.current = true;
-    lastPoint.current = { x, y };
+    lastPoint.current = position;
   };
 
   const draw = (e) => {
+    e.preventDefault(); // Prevent default behavior
     if (!isDrawing.current || !canvasRef.current || !lastPoint.current) return;
+    
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+    
+    let position;
+    if (e.type.includes('mouse')) {
+      const rect = canvas.getBoundingClientRect();
+      position = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    } else {
+      position = getTouchPosition(e, canvas);
+    }
 
     // Check if the current point is on the letter path
-    const isOnPath = isPointOnLetterPath(x, y);
+    const isOnPath = isPointOnLetterPath(position.x, position.y);
     
     ctx.beginPath();
     ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
-    ctx.lineTo(x, y);
+    ctx.lineTo(position.x, position.y);
     
     // Change color based on tracing accuracy
     ctx.strokeStyle = isOnPath ? "green" : "red";
@@ -597,10 +647,11 @@ const TracingCanvas = () => {
     ctx.lineCap = "round";
     ctx.stroke();
 
-    lastPoint.current = { x, y };
+    lastPoint.current = position;
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e) => {
+    e.preventDefault(); // Prevent default behavior
     isDrawing.current = false;
     lastPoint.current = null;
   };
@@ -614,8 +665,15 @@ const TracingCanvas = () => {
     }
   };
 
+  // Handle letter selection
+  const handleLetterSelect = (letter) => {
+    setSelectedLetter(letter);
+    // Clear the canvas when a new letter is selected
+    clearCanvas();
+  };
+
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
+    <div className="flex flex-col items-center gap-4 p-4 w-full max-w-lg mx-auto" ref={containerRef}>
       <h2 className="text-xl font-bold">Letter Tracing Practice</h2>
       
       {/* Letter Buttons */}
@@ -623,7 +681,7 @@ const TracingCanvas = () => {
         {letters.map((letter) => (
           <button
             key={letter}
-            onClick={() => setSelectedLetter(letter)}
+            onClick={() => handleLetterSelect(letter)}
             className={`px-3 py-1 rounded-lg text-sm ${
               selectedLetter === letter
                 ? "bg-purple-600 text-white"
@@ -636,10 +694,10 @@ const TracingCanvas = () => {
       </div>
 
       {/* Tracing Canvas */}
-      <div className="relative">
+      <div className="relative w-full touch-none">
         <canvas
           ref={canvasRef}
-          className="border-2 border-dashed border-purple-400 rounded-xl bg-white dark:bg-gray-900"
+          className="border-2 border-dashed border-purple-400 rounded-xl bg-white dark:bg-gray-900 touch-none"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
@@ -647,6 +705,8 @@ const TracingCanvas = () => {
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
+          onTouchCancel={stopDrawing}
+          style={{ touchAction: 'none' }}
         />
         
         {/* Hidden canvas for path detection */}

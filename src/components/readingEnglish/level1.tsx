@@ -1,12 +1,50 @@
 import { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 
-// ✅ Extend global types (put this in a `types.d.ts` if needed)
+// Web Speech API typings
 declare global {
   interface Window {
     webkitSpeechRecognition: any;
     SpeechRecognition: any;
   }
+}
+
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult;
+  length: number;
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative;
+  length: number;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
 }
 
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -18,19 +56,20 @@ const ReadingLevel1 = () => {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition =
+    const SpeechRecognitionConstructor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionConstructor) {
       alert("Speech recognition is not supported in this browser.");
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition: ISpeechRecognition = new SpeechRecognitionConstructor();
+    recognition.continuous = false;
     recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -40,10 +79,8 @@ const ReadingLevel1 = () => {
       setIsProcessing(false);
     };
 
-    recognition.onresult = (event: any) => {
-      let transcript = event.results[0][0].transcript.trim().toUpperCase();
-
-      // ✅ Only keep the first character (some engines return full words)
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript.trim().toUpperCase();
       const firstChar = transcript.charAt(0);
 
       setRecognizedLetter(firstChar);
@@ -53,48 +90,62 @@ const ReadingLevel1 = () => {
       if (firstChar === selectedLetter) {
         setFeedback("✅ Correct!");
       } else {
-        setFeedback(`❌ You said "${transcript}". Try again.`);
+        setFeedback(`❌ You said "${firstChar}". Try again.`);
       }
 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
 
-    recognition.onerror = (e: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setIsListening(false);
       setIsProcessing(false);
-      setFeedback(`⚠️ Error: ${e.error}`);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setFeedback(`⚠️ Error: ${event.error}`);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
 
     recognition.onend = () => {
       setIsListening(false);
-      setIsProcessing(false);
-      if (!recognizedLetter) {
+      if (!recognizedLetter && !feedback) {
         setFeedback("⚠️ No speech detected. Please try again.");
       }
     };
 
     recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [selectedLetter]);
 
   const startListening = () => {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current || !selectedLetter) return;
 
     setFeedback(null);
     setRecognizedLetter(null);
-    setIsListening(true);
-    setIsProcessing(false);
+    setIsProcessing(true);
 
-    recognitionRef.current.start();
+    try {
+      recognitionRef.current.start();
 
-    timeoutRef.current = setTimeout(() => {
-      if (isListening) {
-        recognitionRef.current?.stop();
-        setIsListening(false);
-        setIsProcessing(false);
-        setFeedback("⚠️ Took too long. Please try again.");
-      }
-    }, 6000);
+      timeoutRef.current = setTimeout(() => {
+        if (isListening) {
+          recognitionRef.current?.stop();
+          setIsListening(false);
+          setIsProcessing(false);
+          setFeedback("⚠️ Took too long. Please try again.");
+        }
+      }, 5000);
+    } catch (error) {
+      setIsProcessing(false);
+      setFeedback("⚠️ Error starting speech recognition. Please try again.");
+    }
   };
 
   const handleLetterClick = (letter: string) => {
@@ -103,7 +154,12 @@ const ReadingLevel1 = () => {
     setFeedback(null);
     setIsListening(false);
     setIsProcessing(false);
-    recognitionRef.current?.abort();
+
+    if (recognitionRef.current) recognitionRef.current.abort();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   };
 
   return (
@@ -138,7 +194,7 @@ const ReadingLevel1 = () => {
           <button
             onClick={startListening}
             className="flex items-center justify-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition mx-auto"
-            disabled={isListening}
+            disabled={isListening || isProcessing}
           >
             {isListening ? (
               <>
