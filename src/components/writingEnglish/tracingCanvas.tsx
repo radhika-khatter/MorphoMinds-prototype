@@ -9,8 +9,6 @@ const TracingCanvas = () => {
   const containerRef = useRef(null); // Reference to the container div
   const isDrawing = useRef(false);
   const lastPoint = useRef(null);
-  // State to track if the canvas is being interacted with
-  const [isCanvasActive, setIsCanvasActive] = useState(false);
 
   // Draw the letter outlines manually (1D)
   const drawLetterOutlines = (ctx, letter, x, y, size, isDotted = false) => {
@@ -573,51 +571,25 @@ const TracingCanvas = () => {
     drawDottedLetter();
   }, [selectedLetter]);
 
-  // Function to disable body scroll
-  const disableBodyScroll = () => {
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.touchAction = 'none';
-  };
-
-  // Function to enable body scroll
-  const enableBodyScroll = () => {
-    document.body.style.overflow = '';
-    document.body.style.touchAction = '';
-    document.documentElement.style.overflow = '';
-    document.documentElement.style.touchAction = '';
-  };
-
-  // Set up global event handlers to prevent all scrolling when canvas is active
+  // Prevent default touch behavior to stop scrolling during drawing
   useEffect(() => {
-    if (isCanvasActive) {
-      disableBodyScroll();
-      
-      // Prevent any touch events from doing their default actions
-      const preventDefault = (e) => {
+    const preventTouchMove = (e) => {
+      if (isDrawing.current) {
         e.preventDefault();
-        return false;
-      };
-      
-      document.addEventListener('touchmove', preventDefault, { passive: false });
-      document.addEventListener('touchstart', preventDefault, { passive: false });
-      document.addEventListener('touchend', preventDefault, { passive: false });
-      
-      return () => {
-        enableBodyScroll();
-        document.removeEventListener('touchmove', preventDefault);
-        document.removeEventListener('touchstart', preventDefault);
-        document.removeEventListener('touchend', preventDefault);
-      };
-    }
-  }, [isCanvasActive]);
+      }
+    };
+
+    // Add passive: false to override default browser behavior
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    
+    return () => {
+      document.removeEventListener('touchmove', preventTouchMove);
+    };
+  }, []);
 
   const getTouchPosition = (e, canvas) => {
-    if (!e.touches || !e.touches[0]) return null;
-    
     const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
+    const touch = e.touches[0] || e.changedTouches[0];
     return {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
@@ -626,8 +598,6 @@ const TracingCanvas = () => {
 
   const startDrawing = (e) => {
     e.preventDefault(); // Prevent default behavior
-    setIsCanvasActive(true); // Activate scroll prevention
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -640,7 +610,6 @@ const TracingCanvas = () => {
       };
     } else {
       position = getTouchPosition(e, canvas);
-      if (!position) return;
     }
     
     isDrawing.current = true;
@@ -649,7 +618,6 @@ const TracingCanvas = () => {
 
   const draw = (e) => {
     e.preventDefault(); // Prevent default behavior
-    
     if (!isDrawing.current || !canvasRef.current || !lastPoint.current) return;
     
     const canvas = canvasRef.current;
@@ -664,7 +632,6 @@ const TracingCanvas = () => {
       };
     } else {
       position = getTouchPosition(e, canvas);
-      if (!position) return;
     }
 
     // Check if the current point is on the letter path
@@ -685,8 +652,6 @@ const TracingCanvas = () => {
 
   const stopDrawing = (e) => {
     e.preventDefault(); // Prevent default behavior
-    setIsCanvasActive(false); // Disable scroll prevention
-    
     isDrawing.current = false;
     lastPoint.current = null;
   };
@@ -729,16 +694,7 @@ const TracingCanvas = () => {
       </div>
 
       {/* Tracing Canvas */}
-      <div 
-        className="relative w-full touch-none" 
-        style={{ 
-          touchAction: 'none',
-          WebkitUserSelect: 'none',
-          userSelect: 'none',
-          MozUserSelect: 'none',
-          msUserSelect: 'none'
-        }}
-      >
+      <div className="relative w-full touch-none">
         <canvas
           ref={canvasRef}
           className="border-2 border-dashed border-purple-400 rounded-xl bg-white dark:bg-gray-900 touch-none"
@@ -750,13 +706,7 @@ const TracingCanvas = () => {
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
           onTouchCancel={stopDrawing}
-          style={{ 
-            touchAction: 'none',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            MozUserSelect: 'none',
-            msUserSelect: 'none'
-          }}
+          style={{ touchAction: 'none' }}
         />
         
         {/* Hidden canvas for path detection */}
