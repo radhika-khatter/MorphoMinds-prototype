@@ -18,11 +18,11 @@ const TracingCanvas = () => {
       ctx.setLineDash([]);
     }
     
-    const lineWidth = isDotted ? 14 : 1;
+    const lineWidth = isDotted ? 3 : 13;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = isDotted ? "rgba(128, 128, 128, 0.4)" : "black";
+    ctx.strokeStyle = isDotted ? "rgba(59, 59, 59, 0.64)" : "black";
     
     // Helper constants for sizing
     const width = size * 0.3;          // Standard letter width
@@ -42,7 +42,7 @@ const TracingCanvas = () => {
         
         // Right leg
         ctx.beginPath();
-        ctx.moveTo(x, stemTopY);
+        ctx.moveTo(x-2, stemTopY);
         ctx.lineTo(x + width, stemBottomY);
         ctx.stroke();
         
@@ -51,6 +51,29 @@ const TracingCanvas = () => {
         ctx.moveTo(x - width * 0.5, y);
         ctx.lineTo(x + width * 0.5, y);
         ctx.stroke();
+
+        // Left leg
+        ctx.beginPath();
+        ctx.lineWidth=15;
+        ctx.moveTo(x, stemTopY);
+        ctx.lineTo(x - width, stemBottomY);
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Right leg
+        ctx.beginPath();
+        ctx.lineWidth=15;
+        ctx.moveTo(x-2, stemTopY);
+        ctx.lineTo(x + width, stemBottomY);
+        ctx.stroke();
+        
+        // Crossbar
+        ctx.beginPath();
+        ctx.lineWidth=15;
+        ctx.moveTo(x - width * 0.5, y);
+        ctx.lineTo(x + width * 0.5, y);
+        ctx.stroke();
+
         break;
         
       case "B":
