@@ -1,116 +1,78 @@
-import { useState, useRef, useEffect } from "react";
-import Header from "@/components/Header";
-
-const hindiLetters = [
-  "अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ", "ए", "ऐ", "ओ", "औ", "अं", "अः",
-  "क", "ख", "ग", "घ", "ङ",
-  "च", "छ", "ज", "झ", "ञ",
-  "ट", "ठ", "ड", "ढ", "ण",
-  "त", "थ", "द", "ध", "न",
-  "प", "फ", "ब", "भ", "म",
-  "य", "र", "ल", "व",
-  "श", "ष", "स", "ह",
-  "क्ष", "त्र", "ज्ञ"
-];
+import React, { useRef, useEffect, useState } from "react";
 
 const WritingHindiLevel1 = () => {
-  const [selectedLetter, setSelectedLetter] = useState("क");
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isDrawing = useRef(false);
-  const lastPoint = useRef<{ x: number; y: number } | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastPos, setLastPos] = useState<{ x: number; y: number } | null>(null);
 
-  const drawDottedLetter = () => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = "180px Arial";
-    ctx.setLineDash([10, 10]);
-    ctx.strokeStyle = "gray";
-    ctx.lineWidth = 2;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.strokeText(selectedLetter, canvas.width / 2, canvas.height / 2);
+    canvas.width = 400;
+    canvas.height = 300;
+
+    // Step 1: Fill letter (used for detection but also visible)
+    ctx.font = "bold 150px 'Noto Sans Devanagari', sans-serif";
+    ctx.fillStyle = "white";
+    ctx.fillText("अ", 100, 180);
+
+    // Step 2: Outline (black)
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
     ctx.setLineDash([]);
+    ctx.strokeText("अ", 100, 180);
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setLastPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
-  useEffect(() => {
-    drawDottedLetter();
-  }, [selectedLetter]);
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !lastPos) return;
 
-  const startDrawing = (e: any) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const ctx = canvas?.getContext("2d");
+    if (!ctx || !canvas) return;
+
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
-    isDrawing.current = true;
-    lastPoint.current = { x, y };
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const [r, g, b, a] = ctx.getImageData(x, y, 1, 1).data;
+
+    const isInsideWhiteLetter = r === 255 && g === 255 && b === 255 && a === 255;
+
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x, lastPos.y);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = isInsideWhiteLetter ? "green" : "red";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    setLastPos({ x, y });
   };
 
-  const draw = (e: any) => {
-    if (!isDrawing.current || !canvasRef.current || !lastPoint.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
-
-    ctx!.beginPath();
-    ctx!.moveTo(lastPoint.current.x, lastPoint.current.y);
-    ctx!.lineTo(x, y);
-    ctx!.strokeStyle = "black";
-    ctx!.lineWidth = 4;
-    ctx!.lineCap = "round";
-    ctx!.stroke();
-
-    lastPoint.current = { x, y };
-  };
-
-  const stopDrawing = () => {
-    isDrawing.current = false;
-    lastPoint.current = null;
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+    setLastPos(null);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Header />
-      <div className="p-6 flex flex-col items-center gap-6">
-        <h2 className="text-3xl font-bold text-purple-600">Hindi Writing Level 1</h2>
-
-        {/* Hindi Letter Buttons */}
-        <div className="flex flex-wrap justify-center gap-2 max-w-5xl">
-          {hindiLetters.map((letter, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedLetter(letter)}
-              className={`px-4 py-2 rounded-lg text-xl ${
-                selectedLetter === letter
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
-              }`}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-
-        {/* Tracing Canvas */}
-        <canvas
-          ref={canvasRef}
-          width={600}
-          height={400}
-          className="border border-gray-400 rounded-lg bg-white dark:bg-gray-800"
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        />
-      </div>
+    <div>
+      <h3>Trace the letter अ – Green if inside white area, Red if outside</h3>
+      <canvas
+        ref={canvasRef}
+        style={{ border: "2px solid black", backgroundColor: "#ddd", touchAction: "none" }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      />
     </div>
   );
 };

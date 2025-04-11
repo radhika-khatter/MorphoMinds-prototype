@@ -105,6 +105,13 @@ const TracingCanvas = () => {
         // Increased radius by using width*0.6 instead of width/2
         ctx.arc(x, y, width*0.6, Math.PI * 0.25, Math.PI * 1.75, false);
         ctx.stroke();
+
+          ctx.beginPath();
+        // Increased radius by using width*0.6 instead of width/2
+        ctx.arc(x, y, width*0.6, Math.PI * 0.25, Math.PI * 1.75, false);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "D":
@@ -114,6 +121,7 @@ const TracingCanvas = () => {
         ctx.lineTo(stemX, stemBottomY);
         ctx.stroke();
         
+        
         // Curved side
         ctx.beginPath();
         ctx.moveTo(stemX, stemTopY);
@@ -121,6 +129,25 @@ const TracingCanvas = () => {
         ctx.quadraticCurveTo(x + width, y, x - width * 0.3, stemBottomY);
         ctx.lineTo(stemX, stemBottomY);
         ctx.stroke();
+        
+         // Vertical stem
+         ctx.beginPath();
+         ctx.moveTo(stemX, stemTopY);
+         ctx.lineTo(stemX, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         
+         // Curved side
+         ctx.beginPath();
+         ctx.moveTo(stemX, stemTopY);
+         ctx.lineTo(x - width * 0.3, stemTopY);
+         ctx.quadraticCurveTo(x + width, y, x - width * 0.3, stemBottomY);
+         ctx.lineTo(stemX, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "E":
@@ -147,6 +174,38 @@ const TracingCanvas = () => {
         ctx.moveTo(stemX, stemBottomY);
         ctx.lineTo(x + width * 0.5, stemBottomY);
         ctx.stroke();
+
+        // Vertical stem
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(stemX, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Top horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(x + width * 0.5, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Middle horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, y);
+        ctx.lineTo(x + width * 0.3, y);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Bottom horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemBottomY);
+        ctx.lineTo(x + width * 0.5, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "F":
@@ -167,27 +226,78 @@ const TracingCanvas = () => {
         ctx.moveTo(stemX, y);
         ctx.lineTo(x + width * 0.3, y);
         ctx.stroke();
+               
+        // Vertical stem
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(stemX, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Top horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(x + width * 0.5, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Middle horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, y);
+        ctx.lineTo(x + width * 0.3, y);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
-      case "G":
-        // Main curve
-        ctx.beginPath();
-        ctx.arc(x, y, width, -Math.PI * 0.7, Math.PI * 0.7, false);
-        ctx.stroke();
-        
-        // Bottom horizontal
-        ctx.beginPath();
-        ctx.moveTo(x, y + width * 0.3);
-        ctx.lineTo(x + width * 0.2, y + width * 0.3);
-        ctx.stroke();
-        
-        // Short vertical
-        ctx.beginPath();
-        ctx.moveTo(x + width * 0.2, y);
-        ctx.lineTo(x + width * 0.2, y + width * 0.3);
-        ctx.stroke();
-        break;
-        
+        case "G":
+       // Set line style
+
+
+// === 1. Arc (main curved body like a "C") ===
+ctx.beginPath();
+ctx.arc(x, y, width, Math.PI * 0.4, Math.PI * 1.6, false); 
+ctx.stroke();
+
+// === 2. Outer vertical line (left side of G) ===
+ctx.beginPath();
+ctx.moveTo(x+27 , y - width * 0.01); // Top outer vertical
+ctx.lineTo(x+27 , y + width * 0.9); // Bottom outer vertical
+ctx.stroke();
+
+// === 4. Horizontal line joining inner and outer verticals ===
+ ctx.beginPath();
+ ctx.moveTo(x-20, y + width * 0.);         // From outer vertical
+ ctx.lineTo(x + 20 , y );   // To inner vertical
+ ctx.stroke();
+
+
+// === 1. Arc (main curved body like a "C") ===
+ctx.beginPath();
+ctx.arc(x, y, width, Math.PI * 0.4, Math.PI * 1.6, false); 
+ctx.stroke();
+ctx.lineWidth=15;
+ctx.strokeStyle="rgba(66, 65, 65, 0)";
+
+// === 2. Outer vertical line (left side of G) ===
+ctx.beginPath();
+ctx.moveTo(x+27 , y - width * 0.01); // Top outer vertical
+ctx.lineTo(x+27 , y + width * 0.9); // Bottom outer vertical
+ctx.lineWidth=15;
+ctx.strokeStyle="rgba(66, 65, 65, 0)";
+ctx.stroke();
+
+// === 4. Horizontal line joining inner and outer verticals ===
+ ctx.beginPath();
+ ctx.moveTo(x-20, y + width * 0.);         // From outer vertical
+ ctx.lineTo(x + 20 , y );   // To inner vertical
+ ctx.lineWidth=15;
+ ctx.strokeStyle="rgba(66, 65, 65, 0)";
+ ctx.stroke();
+break;
+          
       case "H":
         // Left vertical
         ctx.beginPath();
@@ -205,6 +315,30 @@ const TracingCanvas = () => {
         ctx.beginPath();
         ctx.moveTo(stemX, y);
         ctx.lineTo(x + width * 0.5, y);
+        ctx.stroke();
+
+        // Left vertical
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(stemX, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Right vertical
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.5, stemTopY);
+        ctx.lineTo(x + width * 0.5, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Middle horizontal
+        ctx.beginPath();
+        ctx.moveTo(stemX, y);
+        ctx.lineTo(x + width * 0.5, y);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
         ctx.stroke();
         break;
         
@@ -226,6 +360,30 @@ const TracingCanvas = () => {
         ctx.moveTo(x - width * 0.4, stemBottomY);
         ctx.lineTo(x + width * 0.4, stemBottomY);
         ctx.stroke();
+
+        // Vertical
+        ctx.beginPath();
+        ctx.moveTo(x, stemTopY);
+        ctx.lineTo(x, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Top horizontal
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.4, stemTopY);
+        ctx.lineTo(x + width * 0.4, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Bottom horizontal
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.4, stemBottomY);
+        ctx.lineTo(x + width * 0.4, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "J":
@@ -245,6 +403,30 @@ const TracingCanvas = () => {
         ctx.beginPath();
         ctx.moveTo(x - width * 0.2, stemTopY);
         ctx.lineTo(x + width * 0.6, stemTopY);
+        ctx.stroke();
+
+             // Main vertical
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.2, stemTopY);
+        ctx.lineTo(x + width * 0.2, y + height * 0.2);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Bottom curve
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.2, y + height * 0.2);
+        ctx.quadraticCurveTo(x + width * 0.2, stemBottomY, x - width * 0.3, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Top horizontal
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.2, stemTopY);
+        ctx.lineTo(x + width * 0.6, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
         ctx.stroke();
         break;
         
@@ -266,6 +448,30 @@ const TracingCanvas = () => {
         ctx.moveTo(stemX, y);
         ctx.lineTo(x + width * 0.5, stemBottomY);
         ctx.stroke();
+
+         // Vertical stem
+         ctx.beginPath();
+         ctx.moveTo(stemX, stemTopY);
+         ctx.lineTo(stemX, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Upper diagonal
+         ctx.beginPath();
+         ctx.moveTo(stemX, y);
+         ctx.lineTo(x + width * 0.5, stemTopY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Lower diagonal
+         ctx.beginPath();
+         ctx.moveTo(stemX, y);
+         ctx.lineTo(x + width * 0.5, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "L":
@@ -280,6 +486,22 @@ const TracingCanvas = () => {
         ctx.moveTo(stemX, stemBottomY);
         ctx.lineTo(x + width * 0.5, stemBottomY);
         ctx.stroke();
+
+         // Vertical stem
+         ctx.beginPath();
+         ctx.moveTo(stemX, stemTopY);
+         ctx.lineTo(stemX, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Horizontal
+         ctx.beginPath();
+         ctx.moveTo(stemX, stemBottomY);
+         ctx.lineTo(x + width * 0.5, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "M":
@@ -301,6 +523,31 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width, stemTopY);
         ctx.lineTo(x + width, stemBottomY);
         ctx.stroke();
+        
+           // Left vertical
+        ctx.beginPath();
+        ctx.moveTo(x - width, stemBottomY);
+        ctx.lineTo(x - width, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Middle peak
+        ctx.beginPath();
+        ctx.moveTo(x - width, stemTopY);
+        ctx.lineTo(x, y + height * 0.1);
+        ctx.lineTo(x + width, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Right vertical
+        ctx.beginPath();
+        ctx.moveTo(x + width, stemTopY);
+        ctx.lineTo(x + width, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "N":
@@ -321,11 +568,41 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width, stemBottomY);
         ctx.lineTo(x + width, stemTopY);
         ctx.stroke();
+
+            // Left vertical
+        ctx.beginPath();
+        ctx.moveTo(x - width, stemBottomY);
+        ctx.lineTo(x - width, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Diagonal
+        ctx.beginPath();
+        ctx.moveTo(x - width, stemTopY);
+        ctx.lineTo(x + width, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Right vertical
+        ctx.beginPath();
+        ctx.moveTo(x + width, stemBottomY);
+        ctx.lineTo(x + width, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "O":
         ctx.beginPath();
         ctx.ellipse(x, y, width * 0.8, height * 0.5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(x, y, width * 0.8, height * 0.5, 0, 0, Math.PI * 2);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
         ctx.stroke();
         break;
         
@@ -343,6 +620,24 @@ const TracingCanvas = () => {
         ctx.quadraticCurveTo(x + width * 0.7, stemTopY + height * 0.25, x, y);
         ctx.lineTo(stemX, y);
         ctx.stroke();
+
+        // Vertical stem
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(stemX, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Loop
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(x, stemTopY);
+        ctx.quadraticCurveTo(x + width * 0.7, stemTopY + height * 0.25, x, y);
+        ctx.lineTo(stemX, y);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "Q":
@@ -356,6 +651,21 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width * 0.3, y + height * 0.2);
         ctx.lineTo(x + width * 0.6, y + height * 0.4);
         ctx.stroke();
+
+         // Circle
+         ctx.beginPath();
+         ctx.ellipse(x, y - height * 0.1, width * 0.8, height * 0.45, 0, 0, Math.PI * 2);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Tail
+         ctx.beginPath();
+         ctx.moveTo(x + width * 0.3, y + height * 0.2);
+         ctx.lineTo(x + width * 0.6, y + height * 0.4);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "R":
@@ -378,6 +688,32 @@ const TracingCanvas = () => {
         ctx.moveTo(stemX, y);
         ctx.lineTo(x + width * 0.5, stemBottomY);
         ctx.stroke();
+
+        // Vertical stem
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(stemX, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Loop
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemTopY);
+        ctx.lineTo(x, stemTopY);
+        ctx.quadraticCurveTo(x + width * 0.7, stemTopY + height * 0.25, x, y);
+        ctx.lineTo(stemX, y);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Diagonal leg
+        ctx.beginPath();
+        ctx.moveTo(stemX, y);
+        ctx.lineTo(x + width * 0.5, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "S":
@@ -385,6 +721,14 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width * 0.5, stemTopY);
         ctx.quadraticCurveTo(x - width * 0.5, stemTopY + height * 0.2, x - width * 0.2, y);
         ctx.quadraticCurveTo(x + width * 0.8, y + height * 0.2, x - width * 0.5, stemBottomY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.5, stemTopY);
+        ctx.quadraticCurveTo(x - width * 0.5, stemTopY + height * 0.2, x - width * 0.2, y);
+        ctx.quadraticCurveTo(x + width * 0.8, y + height * 0.2, x - width * 0.5, stemBottomY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
         ctx.stroke();
         break;
         
@@ -400,6 +744,22 @@ const TracingCanvas = () => {
         ctx.moveTo(x - width, stemTopY);
         ctx.lineTo(x + width, stemTopY);
         ctx.stroke();
+
+         // Vertical
+         ctx.beginPath();
+         ctx.moveTo(x, stemTopY);
+         ctx.lineTo(x, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Horizontal
+         ctx.beginPath();
+         ctx.moveTo(x - width, stemTopY);
+         ctx.lineTo(x + width, stemTopY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "U":
@@ -420,6 +780,30 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width * 0.7, y + height * 0.2);
         ctx.lineTo(x + width * 0.7, stemTopY);
         ctx.stroke();
+
+        // Left vertical
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.7, stemTopY);
+        ctx.lineTo(x - width * 0.7, y + height * 0.2);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Bottom curve
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.7, y + height * 0.2);
+        ctx.quadraticCurveTo(x, stemBottomY + height * 0.1, x + width * 0.7, y + height * 0.2);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
+        
+        // Right vertical
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.7, y + height * 0.2);
+        ctx.lineTo(x + width * 0.7, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+        ctx.stroke();
         break;
         
       case "V":
@@ -434,6 +818,22 @@ const TracingCanvas = () => {
         ctx.moveTo(x, stemBottomY);
         ctx.lineTo(x + width, stemTopY);
         ctx.stroke();
+
+         // Left diagonal
+         ctx.beginPath();
+         ctx.moveTo(x - width, stemTopY);
+         ctx.lineTo(x, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Right diagonal
+         ctx.beginPath();
+         ctx.moveTo(x, stemBottomY);
+         ctx.lineTo(x + width, stemTopY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "W":
@@ -443,6 +843,16 @@ const TracingCanvas = () => {
         ctx.lineTo(x, y - height * 0.2);
         ctx.lineTo(x + width * 0.5, stemBottomY);
         ctx.lineTo(x + width, stemTopY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x - width, stemTopY);
+        ctx.lineTo(x - width * 0.5, stemBottomY);
+        ctx.lineTo(x, y - height * 0.2);
+        ctx.lineTo(x + width * 0.5, stemBottomY);
+        ctx.lineTo(x + width, stemTopY);
+        ctx.lineWidth=15;
+        ctx.strokeStyle = "rgba(66, 65, 65, 0)";
         ctx.stroke();
         break;
         
@@ -458,6 +868,22 @@ const TracingCanvas = () => {
         ctx.moveTo(x + width, stemTopY);
         ctx.lineTo(x - width, stemBottomY);
         ctx.stroke();
+
+         // Diagonal from top-left to bottom-right
+         ctx.beginPath();
+         ctx.moveTo(x - width, stemTopY);
+         ctx.lineTo(x + width, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Diagonal from top-right to bottom-left
+         ctx.beginPath();
+         ctx.moveTo(x + width, stemTopY);
+         ctx.lineTo(x - width, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "Y":
@@ -478,6 +904,30 @@ const TracingCanvas = () => {
         ctx.moveTo(x, y);
         ctx.lineTo(x, stemBottomY);
         ctx.stroke();
+
+         // Upper left diagonal
+         ctx.beginPath();
+         ctx.moveTo(x - width, stemTopY);
+         ctx.lineTo(x, y);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Upper right diagonal
+         ctx.beginPath();
+         ctx.moveTo(x + width, stemTopY);
+         ctx.lineTo(x, y);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
+         
+         // Lower vertical
+         ctx.beginPath();
+         ctx.moveTo(x, y);
+         ctx.lineTo(x, stemBottomY);
+         ctx.lineWidth=15;
+         ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+         ctx.stroke();
         break;
         
       case "Z":
@@ -498,6 +948,30 @@ const TracingCanvas = () => {
         ctx.moveTo(x - width, stemBottomY);
         ctx.lineTo(x + width, stemBottomY);
         ctx.stroke();
+
+          // Top horizontal
+          ctx.beginPath();
+          ctx.moveTo(x - width, stemTopY);
+          ctx.lineTo(x + width, stemTopY);
+          ctx.lineWidth=15;
+          ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+          ctx.stroke();
+          
+          // Diagonal
+          ctx.beginPath();
+          ctx.moveTo(x + width, stemTopY);
+          ctx.lineTo(x - width, stemBottomY);
+          ctx.lineWidth=15;
+          ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+          ctx.stroke();
+          
+          // Bottom horizontal
+          ctx.beginPath();
+          ctx.moveTo(x - width, stemBottomY);
+          ctx.lineTo(x + width, stemBottomY);
+          ctx.lineWidth=15;
+          ctx.strokeStyle = "rgba(66, 65, 65, 0)";
+          ctx.stroke();
         break;
     }
   };

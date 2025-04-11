@@ -7,9 +7,9 @@ const WritingEnglishLevel1 = () => {
   const [showInstructions, setShowInstructions] = useState(true);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
       <Header />
-      <div className="p-8 flex flex-col items-center">
+      <div className="px-4 py-6 flex flex-col items-center justify-center w-full">
         {showInstructions ? (
           <Instructions onStart={() => setShowInstructions(false)} />
         ) : (
@@ -21,3 +21,4 @@ const WritingEnglishLevel1 = () => {
 };
 
 export default WritingEnglishLevel1;
+

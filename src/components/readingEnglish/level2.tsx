@@ -1,7 +1,16 @@
-const ReadingEnglishLevel2=()=>{
+const ReadingLevel2=()=>{
+
+
     return(
-        <p>reading english level 2</p>
+        <>
+        <h1>Reading Practice - Level 2 </h1>
+        <div>
+            <p>Read the word given below loud.</p>
+            <div>Word to read</div>
+        </div>
+        <button>READ</button>
+        </>
     )
 };
 
-export default ReadingEnglishLevel2;
+export default ReadingLevel2;
